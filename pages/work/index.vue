@@ -15,6 +15,7 @@
 import axios from 'axios'
 
 export default ({
+  // asyncDataでapiからデータ取得
   async asyncData({ query, app, env, error }){
     const baseApi = 'https://api.themoviedb.org/3'
     const words = query.words
