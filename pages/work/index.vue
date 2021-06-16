@@ -16,10 +16,10 @@ import axios from 'axios'
 
 export default ({
   // asyncDataでapiからデータ取得
-  async asyncData({ query, app, env, error }){
+  async asyncData({ query, env, error }){
     const baseApi = 'https://api.themoviedb.org/3'
     const words = query.words
-    const lang = app.context.lang
+    const lang = 'ja-JP'
     const page = 1
     try {
       const configration = await axios.get(
@@ -31,6 +31,7 @@ export default ({
       const popularVideosRes = await axios.get(
         `${baseApi}/movie/popular?api_key=${env.apiKey}&language=${lang}&page=${page}`
       )
+      console.log(popularVideosRes)
       console.log(configration.data.images)
       return {
         config: configration.data.images,
