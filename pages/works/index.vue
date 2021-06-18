@@ -1,19 +1,28 @@
 <template lang="pug">
-  .wrapper
-    input(type="text" v-model="searchWords" placeholder="入力してください")
-    p
-      |{{ searchWords }}
-    ul
-      video-card(
-        v-for = "video in selectedItems"
-        :key = "video.id"
-        :video = "video"
-        :baseUrl = "config.base_url"
-        :posterSizes = "config.poster_sizes"
-        :genre = "genre"
+  div.wrapper
+    section.form
+      h2.heading
+        |作品をさがす
+      input.input(
+          type="text"
+          v-model="searchWords"
+          placeholder="入力してください"
         )
-        br
-        
+    section.result
+      h2.heading()
+        |{{ resultHeading }}
+      ul
+        video-card(
+          v-for = "video in videos"
+          :key = "video.id"
+          :video = "video"
+          :baseUrl = "config.base_url"
+          :posterSizes = "config.poster_sizes"
+          :genre = "genre"
+          :mediaType = "video.media_type || 'movie'"
+          )
+      button.next(v-if="")
+
 </template>
 
 <script>
@@ -26,9 +35,10 @@ export default ({
   },
   data() {
     return {
-      selectedItems: [],
-      popularItems: [],
-      searchWords: ''
+      popularVideos: [],
+      searchedVideos: [],
+      searchWords: '',
+      resultHeading: '話題の新作'
     }
   },
   // asyncDataでapiからデータ取得
@@ -48,7 +58,7 @@ export default ({
 
       return {
         config: configration.data.images,
-        selectedItems: popularVideosRes.data.results,
+        videos: popularVideosRes.data.results,
         genre: {
           movie: movieGenre.data.genres,
           tv: tvGenre.data.genres
@@ -63,10 +73,10 @@ export default ({
   //-----------------------
   mounted() {
     console.log(this.config)
-    console.log(this.popularVideosRare)
+    console.log(this.selectedItems)
     console.log(this.genre.movie)
     console.log(this.genre.tv)
-    this.popularItems = this.selectedItems
+    this.popularVideos = this.videos
   },
   //-----------------------
   // watch
@@ -74,9 +84,10 @@ export default ({
   watch: {
     searchWords: function() {
       if(this.searchWords != '') { 
-        this.selectedItems = this.getSearchedVideos()
+        this.getSearchedVideos()
       } else {
-        this.selectedItems = this.popularItems
+        this.videos = this.popularVideos
+        this.resultHeading = '話題の新作'
       }
     }
   },
@@ -88,12 +99,19 @@ export default ({
     async getSearchedVideos() {
       const baseApi = 'https://api.themoviedb.org/3'
       const page = 1
+      this.searchedVideos = []
       await axios.get(
         `${baseApi}/search/multi?api_key=${process.env.apiKey}&language=ja&page=${page}&query=${this.searchWords}`
       ).then((res) => {
         console.log('multi-search')
         console.log(res)
-        this.selectedItems = res.data.results
+        for(let i = 0; i < res.data.results.length; i++) {
+          if(res.data.results[i].media_type != 'person') {
+            this.searchedVideos.push(res.data.results[i])
+          }
+        }
+        this.videos = this.searchedVideos
+        this.resultHeading = `${res.data.total_results}件見つかりました`
       })
     }
   }
@@ -105,7 +123,27 @@ export default ({
     font-family: 'Noto-sans';
   }
   .wrapper {
-    background-color: #131313;
+    background-color: #212121;
+    height: 100%;
     padding: 0 20px;
+  }
+  .heading {
+    color: #F2F2F2;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+  .form {
+    padding: 30px 0 30px;
+    text-align: center;
+    .input {
+      width: 290px;
+      background-color: #FFFFFF;
+      font-size: 1rem;
+      padding: 15px;
+      text-align: left;
+      border-radius: 30px;
+    }
   }
 </style>
