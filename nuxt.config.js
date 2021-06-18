@@ -46,9 +46,15 @@ export default {
     '@nuxtjs/axios',
     // https://go.nuxtjs.dev/pwa
     '@nuxtjs/pwa',
-    'nuxt-i18n'
+    'nuxt-i18n',
+    'nuxt-webfontloader'
   ],
 
+  webfontloader: {
+    google: {
+      families: ['Lato:400,700', 'Noto+Sans+JP:400,700']
+    }
+  },
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {},
 

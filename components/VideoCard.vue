@@ -105,6 +105,9 @@ export default {
 </script>
 
 <style scoped lang="scss">
+  * {
+    font-family: 'Noto Sans JP', sans-serif;
+  }
   .card {
     width: 100%;
     height: 210px;
@@ -152,7 +155,7 @@ export default {
       .genre {
         display: inline-block;
         color: #FFFFFF;
-        font-size: 0.5rem;
+        font-size: 0.625rem;
         padding: 5px 10px;
         background-color: #FF8933;
         border-radius: 30px;
