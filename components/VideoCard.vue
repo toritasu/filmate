@@ -114,6 +114,7 @@ export default {
     background-color: #FFFFFF;
     border-radius: 5px;
     display: flex;
+    overflow: hidden;
     &:not(:last-child) {
       margin-bottom: 25px;
     }
@@ -130,7 +131,8 @@ export default {
     }
     .content {
       width: 57%;
-      padding: 10px;
+      margin: 10px;
+      overflow: hidden;
       .type {
         display: inline-block;
         color: #585858;
