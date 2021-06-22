@@ -23,9 +23,12 @@
 
 </template>
 
-<script lang="ts">
+<script>
 import axios from 'axios'
 import Vue from 'vue'
+
+// TODO:小さなパーツのコンポーネント化
+// コンポーネント化できないものは、CompositionAPI導入後に関数の切り分け
 
 export default Vue.extend({
   async asyncData({ env, error, query, params }) {
