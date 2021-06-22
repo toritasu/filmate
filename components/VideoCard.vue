@@ -1,8 +1,8 @@
 <template lang="pug">
-  li.card
+  li.card(@click="goDetail(video.id, mediaType)")
     div.poster
       picture
-        img(:src="getImagePath(video.poster_path || video.profile_path, 1)")
+        img(:src="getImagePath(video.poster_path, 1)")
     div.content
       div.type
         |{{ getMediaType() }}
@@ -10,11 +10,21 @@
         |{{ getTitle() }}
       div.release
         |{{ getReleaseYear() }}
-      div.genre(v-for="genreId in video.genre_ids")
+      div.genre(v-for="genreId in genreIdsLimited")
         |{{ getGenreName(genreId) }}
+      div.funs
+        a.fun(
+          v-for="fun in fansSample"
+          :key="fun.id"
+          :href="`user/${fun.id}`"
+        )
+          img(:src="fun.icon" :alt="fun.name")
 </template>
 
 <script>
+// TODO: タイトル欄が２行を超えたら文字サイズを小さくするメソッド
+// TODO: カテゴリー数は３を超える場合、最後に＋マークをつける
+// TODO: 「サイエンスフィクション」をSFにする
 export default {
   props: {
     video: {
@@ -38,11 +48,68 @@ export default {
       default: () => ({}),
     },
   },
+  // この作品をスキした人（仮のデータ）
+  // slotかコンポーネント
+  data() {
+    return {
+      funs: [
+        {
+          id: 1,
+          name: 'ユイ',
+          icon: require('@/assets/images/sample_users/yui.jpeg'),
+        },
+        {
+          id: 2,
+          name: 'にこむ',
+          icon: require('@/assets/images/sample_users/niko.jpeg'),
+        },
+        {
+          id: 3,
+          name: '松田信介',
+          icon: require('@/assets/images/sample_users/matsuda.jpeg'),
+        },
+        {
+          id: 4,
+          name: 'クロスケ',
+          icon: require('@/assets/images/sample_users/kurosuke.jpeg'),
+        },
+        {
+          id: 5,
+          name: 'とよもも',
+          icon: require('@/assets/images/sample_users/toyomomo.jpeg'),
+        },
+        {
+          id: 6,
+          name: 'とりたす',
+          icon: require('@/assets/images/sample_users/toritas.jpeg'),
+        },
+        {
+          id: 7,
+          name: 'キャバ嬢',
+          icon: require('@/assets/images/sample_users/rie.png'),
+        },
+      ],
+      fansSample: [],
+    }
+  },
+  computed: {
+    genreIdsLimited() {
+      return this.video.genre_ids.slice(0, 3)
+    },
+  },
   mounted() {
     // console.log(this.video.id + ': ' + this.getTitle())
     // console.log(this.video)
+
+    // ランダムで5人までアイコン表示
+    this.getSampleUsers()
   },
   methods: {
+    // 詳細ページへ遷移
+    goDetail(id, mediaType) {
+      console.log('Go To: works/' + id)
+      this.$router.push(`/works/${id}?media_type=${mediaType}`)
+    },
     // 画像パスを生成
     // poster_sizesはインデックスが上がるほど大きい
     getImagePath(filename, sizeIndex) {
@@ -97,6 +164,15 @@ export default {
         return 'ドラマ'
       }
     },
+    getSampleUsers() {
+      const count = Math.floor(Math.random() * 6)
+      const funsTemp = this.funs
+      for (let i = 0; i < count; i++) {
+        const index = Math.floor(Math.random() * funsTemp.length)
+        this.fansSample.push(funsTemp[index])
+        funsTemp.splice(index, 1)
+      }
+    },
   },
 }
 </script>
@@ -107,7 +183,7 @@ export default {
 }
 .card {
   width: 100%;
-  height: 180px;
+  height: 210px;
   background-color: #ffffff;
   border-radius: 5px;
   display: flex;
@@ -117,7 +193,7 @@ export default {
     margin-bottom: 20px;
   }
   .poster {
-    width: 40%;
+    width: 43%;
     height: 100%;
     img,
     source {
@@ -129,9 +205,10 @@ export default {
     }
   }
   .content {
-    width: 60%;
+    width: 57%;
     margin: 10px;
     overflow: hidden;
+    position: relative;
     .type {
       display: inline-block;
       color: #585858;
@@ -162,6 +239,34 @@ export default {
       border-radius: 30px;
       margin-right: 4px;
       margin-bottom: 4px;
+    }
+    .funs {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      @for $cnt from 1 through 5 {
+        .fun:nth-child(#{$cnt}).fun:not(:first-child) {
+          transform: translateX(($cnt - 1) * -40%);
+          z-index: 10 - $cnt;
+        }
+      }
+      .fun {
+        display: inline-block;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        border-radius: 100%;
+        border: 1px solid #909090;
+        &:first-child {
+          z-index: 10;
+        }
+        img {
+          width: 35px;
+          height: 35px;
+          border-radius: 100%;
+          object-fit: cover;
+        }
+      }
     }
   }
 }
