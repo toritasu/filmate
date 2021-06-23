@@ -13,7 +13,7 @@
         div.genre(v-for="genre in video.genres")
           |{{ genre.name }}
     section.fans(v-if="fansSample")
-      h2
+      h2(v-if="fansSample[0].name")
         |{{ fansHeading }}
       p
         fan-icon(
@@ -22,12 +22,12 @@
           :fan="fan"
         )
     section.story(v-if="video.overview")
-      h2
+      h2.heading
         |STORY
       p
         |{{video.overview}}
     section.casts(v-if="casts")
-      h2
+      h2.heading
         |CAST
       ul
         cast-card(
@@ -37,6 +37,15 @@
           :baseUrl="baseUrl"
           :profileSizes="profileSizes"
         )
+    section.reviews
+      h2.heading
+        |REVIEWS
+      ul
+        review-card(
+          v-for="fan in fans"
+          :key="fan.key"
+          :fan="fan"
+        )
 </template>
 
 <script>
@@ -44,6 +53,7 @@ import axios from 'axios'
 import Vue from 'vue'
 import CastCard from '@/components/CastCard'
 import FanIcon from '@/components/FanIcon'
+import ReviewCard from '@/components/ReviewCard'
 
 // TODO:小さなパーツのコンポーネント化
 // コンポーネント化できないものは、CompositionAPI導入後に関数の切り分け
@@ -52,6 +62,7 @@ export default Vue.extend({
   component: {
     'cast-card': CastCard,
     'fan-icon': FanIcon,
+    'review-card': ReviewCard,
   },
   async asyncData({ env, error, query, params }) {
     const baseApi = 'https://api.themoviedb.org/3'
@@ -137,7 +148,7 @@ export default Vue.extend({
     }
   },
   computed: {
-    // サンプル用：ファンを5名までランダム抽出
+    // デバッグ用：ファンを5名までランダム抽出
     fansSample() {
       const count = Math.floor(Math.random() * 6)
       const fansSample = []
@@ -149,7 +160,7 @@ export default Vue.extend({
       }
       return fansSample
     },
-    // サンプル用：ファン見出し生成
+    // デバッグ用：ファン見出し生成
     fansHeading() {
       const firstFan = this.fansSample[0].name
       const count = this.fansSample.length - 1
@@ -158,6 +169,7 @@ export default Vue.extend({
     },
   },
   created() {
+    // デバッグ用
     console.log(this.genre)
     for (let i = 0; i < this.genre.movie.length; i++) {
       console.log(this.genre.movie[i].id + ': ' + this.genre.movie[i].name)
@@ -175,6 +187,7 @@ export default Vue.extend({
         return require('@/assets/images/no-image.png')
       }
     },
+    // TODO: モジュール化
     getTitle() {
       if (this.mediaType === 'movie') {
         return this.video.title
@@ -182,6 +195,7 @@ export default Vue.extend({
         return this.video.name
       }
     },
+    // TODO: モジュール化
     getMediaType() {
       if (this.mediaType === 'movie') {
         return '映画'
@@ -223,7 +237,7 @@ export default Vue.extend({
         display: inline-block;
         color: #ffffff;
         font-size: 0.635rem;
-        border: 1px solid #6f6f6f;
+        border: 1px solid #ffffff;
         border-radius: 3px;
         padding: 4px 10px;
         margin-bottom: 7px;
@@ -265,34 +279,33 @@ export default Vue.extend({
       margin-right: 5px;
     }
   }
-  .story {
+  .heading {
     color: #ffffff;
-    padding: 0 20px;
     margin-bottom: 30px;
-    h2 {
-      font-size: 1.25rem;
-      margin-bottom: 15px;
-      text-align: center;
-    }
+    font-size: 1.25rem;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+  .story {
+    padding: 0 20px;
+    padding-bottom: 50px;
     p {
+      color: #ffffff;
       font-size: 0.875rem;
-      line-height: 1.7;
+      line-height: 1.5;
     }
   }
   .casts {
-    color: #ffffff;
-    text-align: center;
-    margin-bottom: 30px;
-    h2 {
-      font-size: 1.25rem;
-      margin-bottom: 15px;
-    }
+    padding-bottom: 50px;
     ul {
       display: flex;
       flex-wrap: nowrap;
       overflow-x: scroll;
       overflow-y: hidden;
     }
+  }
+  .reviews {
+    padding-bottom: 50px;
   }
 }
 </style>
