@@ -2,10 +2,10 @@
   li.cast-card
     img.profile(:src="getImagePath(cast.profile_path, 1)" :alt="cast.name")
     div.text
-      span.character
-        |{{ cast.character }}
       span.actor
         |{{ cast.name }}
+      span.character
+        |{{ cast.character }}
 
 </template>
 
@@ -65,7 +65,7 @@ export default {
       line-height: 1.2;
       word-break: break-all;
     }
-    .character {
+    .actor {
       font-weight: bold;
       margin-bottom: 4px;
     }
