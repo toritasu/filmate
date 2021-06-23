@@ -12,20 +12,20 @@
         |{{ getReleaseYear() }}
       div.genre(v-for="genreId in genreIdsLimited")
         |{{ getGenreName(genreId) }}
-      div.funs
-        a.fun(
-          v-for="fun in fansSample"
-          :key="fun.id"
-          :href="`user/${fun.id}`"
-        )
-          img(:src="fun.icon" :alt="fun.name")
+      div.fans
+        fan-icon(v-for="fan in fansSample" :key="fan.id" :fan="fan")
 </template>
 
 <script>
+import FanIcon from '@/components/FanIcon'
+
 // TODO: タイトル欄が２行を超えたら文字サイズを小さくするメソッド
 // TODO: カテゴリー数は３を超える場合、最後に＋マークをつける
 // TODO: 「サイエンスフィクション」をSFにする
 export default {
+  components: {
+    'fan-icon': FanIcon,
+  },
   props: {
     video: {
       type: Object,
@@ -52,7 +52,7 @@ export default {
   // slotかコンポーネント
   data() {
     return {
-      funs: [
+      fans: [
         {
           id: 1,
           name: 'ユイ',
@@ -97,7 +97,7 @@ export default {
       return this.video.genre_ids.slice(0, 3)
     },
   },
-  mounted() {
+  created() {
     // console.log(this.video.id + ': ' + this.getTitle())
     // console.log(this.video)
 
@@ -164,13 +164,14 @@ export default {
         return 'ドラマ'
       }
     },
+    // - サンプル用fans生成
     getSampleUsers() {
       const count = Math.floor(Math.random() * 6)
-      const funsTemp = this.funs
+      const fansTemp = this.fans
       for (let i = 0; i < count; i++) {
-        const index = Math.floor(Math.random() * funsTemp.length)
-        this.fansSample.push(funsTemp[index])
-        funsTemp.splice(index, 1)
+        const index = Math.floor(Math.random() * fansTemp.length)
+        this.fansSample.push(fansTemp[index])
+        fansTemp.splice(index, 1)
       }
     },
   },
@@ -240,31 +241,22 @@ export default {
       margin-right: 4px;
       margin-bottom: 4px;
     }
-    .funs {
+    .fans {
       position: absolute;
       bottom: 0;
       right: 0;
-      @for $cnt from 1 through 5 {
-        .fun:nth-child(#{$cnt}).fun:not(:first-child) {
-          transform: translateX(($cnt - 1) * -40%);
-          z-index: 10 - $cnt;
-        }
-      }
-      .fun {
-        display: inline-block;
+      a {
         position: absolute;
         bottom: 0;
         right: 0;
-        border-radius: 100%;
-        border: 1px solid #909090;
-        &:first-child {
-          z-index: 10;
-        }
-        img {
-          width: 35px;
-          height: 35px;
-          border-radius: 100%;
-          object-fit: cover;
+      }
+      &:first-child {
+        z-index: 10;
+      }
+      @for $cnt from 1 through 5 {
+        .fan:nth-child(#{$cnt}).fan:not(:first-child) {
+          transform: translateX(($cnt - 1) * -40%);
+          z-index: 10 - $cnt;
         }
       }
     }
