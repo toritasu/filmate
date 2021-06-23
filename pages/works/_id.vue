@@ -3,34 +3,56 @@
     section.key-visual
       img.backdrop(:src="getImagePath(video.backdrop_path, 1)", alt="alt")
       div.top-info
+        //- TODO:コンポーネント化
         div.type
           |{{ getMediaType() }}
         div.title
           |{{ getTitle() }}
         div.tagline
           |{{ video.tagline }}
-        div.release
-          |{{ getReleaseYear() }}
-        div.genre(v-for="genreId in video.genres")
-          |{{ getGenreName(genreId) }}
-    section.fans
-      |ユイさん他3名オススメ!!
-    section.story
+        div.genre(v-for="genre in video.genres")
+          |{{ genre.name }}
+    section.fans(v-if="fansSample")
+      h2
+        |{{ fansHeading }}
+      p
+        fan-icon(
+          v-for="fan in fansSample"
+          :key="fan.id"
+          :fan="fan"
+        )
+    section.story(v-if="video.overview")
       h2
         |STORY
       p
         |{{video.overview}}
-
+    section.casts(v-if="casts")
+      h2
+        |CAST
+      ul
+        cast-card(
+          v-for="cast in casts"
+          :key="cast.id"
+          :cast="cast"
+          :baseUrl="baseUrl"
+          :profileSizes="profileSizes"
+        )
 </template>
 
 <script>
 import axios from 'axios'
 import Vue from 'vue'
+import CastCard from '@/components/CastCard'
+import FanIcon from '@/components/FanIcon'
 
 // TODO:小さなパーツのコンポーネント化
 // コンポーネント化できないものは、CompositionAPI導入後に関数の切り分け
 
 export default Vue.extend({
+  component: {
+    'cast-card': CastCard,
+    'fan-icon': FanIcon,
+  },
   async asyncData({ env, error, query, params }) {
     const baseApi = 'https://api.themoviedb.org/3'
     const lang = 'ja-JP'
@@ -55,16 +77,18 @@ export default Vue.extend({
 
       console.log(configration.data.images)
       console.log(details.data)
+      console.log(casts.data)
       return {
         baseUrl: configration.data.images.base_url,
         posterSizes: configration.data.images.poster_sizes,
+        profileSizes: configration.data.images.profile_sizes,
         backdropSizes: configration.data.images.backdrop_sizes,
         video: details.data,
         genre: {
           movie: movieGenre.data.genres,
           tv: tvGenre.data.genres,
         },
-        casts: casts.data,
+        casts: casts.data.cast,
       }
     } catch (e) {
       error(e)
@@ -72,7 +96,7 @@ export default Vue.extend({
   },
   data() {
     return {
-      funs: [
+      fans: [
         {
           id: 1,
           name: 'ユイ',
@@ -109,8 +133,34 @@ export default Vue.extend({
           icon: require('@/assets/images/sample_users/rie.png'),
         },
       ],
-      fansSample: [],
       mediaType: this.$route.query.media_type,
+    }
+  },
+  computed: {
+    // サンプル用：ファンを5名までランダム抽出
+    fansSample() {
+      const count = Math.floor(Math.random() * 6)
+      const fansSample = []
+      const fansTemp = this.fans
+      for (let i = 0; i < count; i++) {
+        const index = Math.floor(Math.random() * fansTemp.length)
+        fansSample.push(fansTemp[index])
+        fansTemp.splice(index, 1)
+      }
+      return fansSample
+    },
+    // サンプル用：ファン見出し生成
+    fansHeading() {
+      const firstFan = this.fansSample[0].name
+      const count = this.fansSample.length - 1
+      const rest = count ? `他${count}名` : ''
+      return `${firstFan}さん${rest}のオススメ!!`
+    },
+  },
+  created() {
+    console.log(this.genre)
+    for (let i = 0; i < this.genre.movie.length; i++) {
+      console.log(this.genre.movie[i].id + ': ' + this.genre.movie[i].name)
     }
   },
   methods: {
@@ -132,34 +182,6 @@ export default Vue.extend({
         return this.video.name
       }
     },
-    getReleaseYear() {
-      let date = ''
-      let append = ''
-      if (this.mediaType === 'movie') {
-        date = this.video.release_date
-        append = '年公開'
-      } else {
-        date = this.video.first_air_date
-        append = '年放送開始'
-      }
-      return date ? date.substring(0, date.indexOf('-')) + append : ''
-    },
-    getGenreName(genreId) {
-      let index = 0
-      switch (this.mediaType) {
-        case 'movie':
-          index = this.genre.movie.findIndex((elm) => elm.id === genreId)
-          if (index >= 0) {
-            return this.genre.movie[index].name
-          }
-          break
-        case 'tv':
-          index = this.genre.tv.findIndex((elm) => elm.id === genreId)
-          if (index >= 0) {
-            return this.genre.tv[index].name
-          }
-      }
-    },
     getMediaType() {
       if (this.mediaType === 'movie') {
         return '映画'
@@ -178,7 +200,7 @@ export default Vue.extend({
   font-family: 'Noto Sans JP', sans-serif;
 }
 .video {
-  background-color: #3f3f3f;
+  background-color: #2f2f2f;
   .key-visual {
     position: relative;
     height: 210px;
@@ -197,6 +219,35 @@ export default Vue.extend({
       z-index: 2;
       padding: 10px 20px;
       color: #ffffff;
+      .type {
+        display: inline-block;
+        color: #ffffff;
+        font-size: 0.635rem;
+        border: 1px solid #6f6f6f;
+        border-radius: 3px;
+        padding: 4px 10px;
+        margin-bottom: 7px;
+      }
+      .title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1;
+        margin-bottom: 5px;
+      }
+      .tagline {
+        font-size: 0.75rem;
+        margin-bottom: 10px;
+      }
+      .genre {
+        display: inline-block;
+        color: #ffffff;
+        font-size: 0.625rem;
+        padding: 4px 8px 5px;
+        background-color: #ff8933;
+        border-radius: 30px;
+        margin-right: 4px;
+        margin-bottom: 4px;
+      }
     }
   }
   .fans {
@@ -204,19 +255,43 @@ export default Vue.extend({
     font-size: 0.75rem;
     text-align: center;
     padding: 20px;
+    margin-bottom: 20px;
+    position: relative;
+    text-align: center;
+    h2 {
+      margin-bottom: 10px;
+    }
+    .fan:not(:last-child) {
+      margin-right: 5px;
+    }
   }
   .story {
     color: #ffffff;
-    text-align: center;
     padding: 0 20px;
     margin-bottom: 30px;
     h2 {
       font-size: 1.25rem;
       margin-bottom: 15px;
+      text-align: center;
     }
     p {
       font-size: 0.875rem;
       line-height: 1.7;
+    }
+  }
+  .casts {
+    color: #ffffff;
+    text-align: center;
+    margin-bottom: 30px;
+    h2 {
+      font-size: 1.25rem;
+      margin-bottom: 15px;
+    }
+    ul {
+      display: flex;
+      flex-wrap: nowrap;
+      overflow-x: scroll;
+      overflow-y: hidden;
     }
   }
 }
